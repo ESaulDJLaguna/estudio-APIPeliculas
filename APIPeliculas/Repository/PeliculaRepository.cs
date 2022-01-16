@@ -69,7 +69,7 @@ namespace APIPeliculas.Repository
 
 		public ICollection<Pelicula> GetPeliculasEnCategoria(int CatId)
 		{
-			return _bd.Pelicula.Include(ca => ca.Categoria).Where(ca => ca.Id == CatId).ToList();
+			return _bd.Pelicula.Include(ca => ca.Categoria).Where(ca => ca.categoriaId == CatId).ToList();
 		}
 
 		public bool Guardar()

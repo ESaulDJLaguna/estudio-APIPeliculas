@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 namespace APIPeliculas.Controllers
 {
@@ -54,6 +55,49 @@ namespace APIPeliculas.Controllers
 			return Ok(itemPeliculaDto);
 		}
 
+		// ERROR, AUNQUE SE PODRÍA HACER DE ESTA FORMA, YA EXISTE ARRIBA UN MÉTODO QUE PASA COMO PARÁMETRO UN ENTERO, PARA DIFERENCIARLO DE ESTE, SE LE DA UN NUEVO NOMBRE O UNA NUEVA RUTA
+		//[HttpGet("{categoriaId:int}", Name = "GetPeliculasEnCategoria")]
+		[HttpGet("GetPeliculasEnCategoria/{categoriaId:int}")]
+		public IActionResult GetPeliculasEnCategoria(int categoriaId)
+        {
+			var listaPeliculas = _pelRepo.GetPeliculasEnCategoria(categoriaId);
+
+			if(listaPeliculas == null)
+            {
+				return NotFound();
+            }
+
+			var itemPelicula = new List<PeliculaDto>();
+
+            foreach (var item in listaPeliculas)
+            {
+				itemPelicula.Add(_mapper.Map<PeliculaDto>(item));
+            }
+
+			return Ok(itemPelicula);
+        }
+		// Para pasar un dato a buscar, se hace desde la url de la API, utilizando un signo de interrogación y el nombre del parámetro (si incluye espacios, se ponen tal cual), así que utilizando Postman, se haría de la siguiente forma:
+		// https://localhost:44317/api/Peliculas/Buscar?nombreABuscar=nombre con espacios
+		[HttpGet("Buscar")]
+		public IActionResult Buscar(string nombreABuscar)
+        {
+            try
+            {
+				var resultado = _pelRepo.BuscarPelicula(nombreABuscar);
+
+				if(resultado.Any())
+                {
+					return Ok(resultado);
+                }
+
+				return NotFound();
+            }
+            catch (Exception)
+            {
+				return StatusCode(StatusCodes.Status500InternalServerError, "Error recuperando datos de la aplicación");
+            }
+        }
+
 		[HttpPost]
 		public IActionResult CrearPelicula([FromForm] PeliculaCreateDto PeliculaDto)
 		{
@@ -67,25 +111,34 @@ namespace APIPeliculas.Controllers
 				return StatusCode(404, ModelState);
 			}
 
-			// Subida de archivos
+			//* Subida de archivos
+			// Obtiene la imagen que se subió
 			var archivo = PeliculaDto.Foto;
+			// Accede hasta la carpeta (NO A fotos): C:\...\wwwroot
 			string rutaPrincipal = _hostingEnvironment.WebRootPath;
+			// Obtiene la información de la imagen, pero directamente desde el formulario dode se subió
 			var archivos = HttpContext.Request.Form.Files;
 
+			// Sí eligieron una imagen
 			if(archivo.Length > 0)
 			{
-				// Nueva imagen
+				// *Nueva imagen
+				// Crea un nombre nuevo e irrepetible para la imagen
 				var nombreFoto = Guid.NewGuid().ToString();
+				// Dónde se guardará la imagen: C:\...\wwwroot\fotos
 				var subidas = Path.Combine(rutaPrincipal, @"fotos");
+				// FileName es el nombre del archivo que se subió (por ejemplo: foto.jpg)
+				// Obtiene la extensión de la imagen (incluyendo el punto)
 				var extension = Path.GetExtension(archivos[0].FileName);
 
+				// Crea un archivo "vacío" y su propiedad Name será toda la ruta donde se guardará, concatenado con el nombre y la extensión
+				// Por ejemplo: C:\...wwwroot\fotos\06c5cff6-ab8a-491c-887c-d960daf38489.jpg
 				using (var fileStreams = new FileStream(Path.Combine(subidas, nombreFoto + extension), FileMode.Create))
 				{
+					// Copia toda la información en el archivo que se creó ("construye" la imagen)
 					archivos[0].CopyTo(fileStreams);
 				}
 				PeliculaDto.RutaImagen = @"\fotos\" + nombreFoto + extension;
-
-
 			}
 
 			var pelicula = _mapper.Map<Pelicula>(PeliculaDto);
@@ -100,14 +153,14 @@ namespace APIPeliculas.Controllers
 		}
 
 		[HttpPatch("{peliculaId:int}", Name = "ActualizarPelicula")]
-		public IActionResult ActualizarPelicula(int peliculaId, [FromBody] PeliculaDto peliculaDto)
+		public IActionResult ActualizarPelicula(int peliculaId, [FromBody] PeliculaUpdateDto peliculaUpdateDto)
 		{
-			if (peliculaDto == null || peliculaId != peliculaDto.Id)
+			if (peliculaUpdateDto == null || peliculaId != peliculaUpdateDto.Id)
 			{
 				return BadRequest(ModelState);
 			}
 
-			var pelicula = _mapper.Map<Pelicula>(peliculaDto);
+			var pelicula = _mapper.Map<Pelicula>(peliculaUpdateDto);
 
 			if (!_pelRepo.ActualizarPelicula(pelicula))
 			{
