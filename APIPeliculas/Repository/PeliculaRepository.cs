@@ -54,12 +54,12 @@ namespace APIPeliculas.Repository
 
 		public bool ExistePelicula(int id)
 		{
-			return _bd.Pelicula.Any(c => c.Id == id);
+			return _bd.Pelicula.Any((System.Linq.Expressions.Expression<System.Func<Pelicula, bool>>)(c => c.Id == id));
 		}
 
 		public Pelicula GetPelicula(int PeliculaId)
 		{
-			return _bd.Pelicula.FirstOrDefault( c => c.Id == PeliculaId);
+			return _bd.Pelicula.FirstOrDefault( (System.Linq.Expressions.Expression<System.Func<Pelicula, bool>>)(c => c.Id == PeliculaId));
 		}
 
 		public ICollection<Pelicula> GetPeliculas()
