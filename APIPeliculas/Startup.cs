@@ -56,6 +56,16 @@ namespace APIPeliculas
 
             services.AddAutoMapper(typeof(PeliculasMappers));
 
+            // De aquí en adelante configuración de documentación de nuestra API
+            services.AddSwaggerGen(options =>
+            {
+                options.SwaggerDoc("ApiPeliculas", new Microsoft.OpenApi.Models.OpenApiInfo()
+                {
+                    Title = "API Películas",
+                    Version = "v1"
+                });
+			});
+
             services.AddControllers();
         }
 
@@ -69,7 +79,17 @@ namespace APIPeliculas
 
             app.UseHttpsRedirection();
 
-            app.UseRouting();
+            // Línea para documentación  API
+            app.UseSwagger();
+			app.UseSwaggerUI(options =>
+			{
+				// Esto nos evitará tener que navegar a .../Swagger/nombreApi/swagger.json
+				options.SwaggerEndpoint("/swagger/ApiPeliculas/swagger.json", "API Películas");
+                // Gracias a esta línea no tendremos que escribor la ruta .../Swagger/index.html, cargará inmediatamente la documentación de la API.
+                options.RoutePrefix = "";
+			});
+
+			app.UseRouting();
 
             app.UseAuthorization();
 
