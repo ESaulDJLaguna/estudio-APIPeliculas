@@ -2,6 +2,7 @@
 using APIPeliculas.Models.Dtos;
 using APIPeliculas.Repository.IRepository;
 using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -12,8 +13,11 @@ using System.Linq;
 
 namespace APIPeliculas.Controllers
 {
+	[Authorize]
 	[Route("api/Peliculas")]
 	[ApiController]
+	[ApiExplorerSettings(GroupName = "ApiPeliculas")]
+	[ProducesResponseType(StatusCodes.Status400BadRequest)]
 	public class PeliculasController : Controller
 	{
 		private readonly IPeliculaRepository _pelRepo;
@@ -27,6 +31,11 @@ namespace APIPeliculas.Controllers
 			_hostingEnvironment = hostEnvironment;
 		}
 
+		/// <summary>
+		/// Obtener todas las peliculas
+		/// </summary>
+		/// <returns></returns>
+		[AllowAnonymous]
 		[HttpGet]
 		public IActionResult GetPeliculas()
 		{
@@ -41,6 +50,12 @@ namespace APIPeliculas.Controllers
 			return Ok(listaPeliculasDto);
 		}
 
+		/// <summary>
+		/// Obtener una pelicula individual
+		/// </summary>
+		/// <param name="peliculaId"> Este es el id de la pelicula</param>
+		/// <returns></returns>
+		[AllowAnonymous]
 		[HttpGet("{peliculaId:int}", Name = "GetPeliculas")]
 		public IActionResult GetPeliculas(int peliculaId)
 		{
@@ -57,6 +72,12 @@ namespace APIPeliculas.Controllers
 
 		// ERROR, AUNQUE SE PODRÍA HACER DE ESTA FORMA, YA EXISTE ARRIBA UN MÉTODO QUE PASA COMO PARÁMETRO UN ENTERO, PARA DIFERENCIARLO DE ESTE, SE LE DA UN NUEVO NOMBRE O UNA NUEVA RUTA
 		//[HttpGet("{categoriaId:int}", Name = "GetPeliculasEnCategoria")]
+		/// <summary>
+		/// Obtener peliculas por categoria
+		/// </summary>
+		/// <param name="categoriaId"> Este es el id de la categoría</param>
+		/// <returns></returns>
+		[AllowAnonymous]
 		[HttpGet("GetPeliculasEnCategoria/{categoriaId:int}")]
 		public IActionResult GetPeliculasEnCategoria(int categoriaId)
         {
@@ -78,6 +99,12 @@ namespace APIPeliculas.Controllers
         }
 		// Para pasar un dato a buscar, se hace desde la url de la API, utilizando un signo de interrogación y el nombre del parámetro (si incluye espacios, se ponen tal cual), así que utilizando Postman, se haría de la siguiente forma:
 		// https://localhost:44317/api/Peliculas/Buscar?nombreABuscar=nombre con espacios
+		/// <summary>
+		/// Buscar peliculas por nombre o descripción
+		/// </summary>
+		/// <param name="nombreABuscar"> Este es el nombre a buscar</param>
+		/// <returns></returns>
+		[AllowAnonymous]
 		[HttpGet("Buscar")]
 		public IActionResult Buscar(string nombreABuscar)
         {
@@ -98,6 +125,10 @@ namespace APIPeliculas.Controllers
             }
         }
 
+		/// <summary>
+		/// Crear una nueva pelicula
+		/// </summary>       
+		/// <returns></returns>
 		[HttpPost]
 		public IActionResult CrearPelicula([FromForm] PeliculaCreateDto PeliculaDto)
 		{
@@ -152,6 +183,10 @@ namespace APIPeliculas.Controllers
 			return CreatedAtRoute("GetPeliculas", new { peliculaId = pelicula.Id }, pelicula);
 		}
 
+		/// <summary>
+		/// Actualizar una película existente
+		/// </summary>        
+		/// <returns></returns>
 		[HttpPatch("{peliculaId:int}", Name = "ActualizarPelicula")]
 		public IActionResult ActualizarPelicula(int peliculaId, [FromBody] PeliculaUpdateDto peliculaUpdateDto)
 		{
@@ -170,6 +205,11 @@ namespace APIPeliculas.Controllers
 			return NoContent();
 		}
 
+		/// <summary>
+		/// Borrar una pelicula existente
+		/// </summary>
+		/// <param name="peliculaId"> Este es el id de la película</param>
+		/// <returns></returns>
 		[HttpDelete("{peliculaId:int}", Name = "BorrarPelicula")]
 		public IActionResult BorrarPelicula(int peliculaId)
 		{

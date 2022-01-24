@@ -4,6 +4,11 @@
     <TargetFramework>netcoreapp3.1</TargetFramework>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DocumentationFile>APIPeliculas.xml</DocumentationFile>
+    <NoWarn>1701;1702;1591</NoWarn>
+  </PropertyGroup>
+
   <ItemGroup>
     <Compile Remove="Data\Migrations\20220114004644_CreacionTablaPelicula.cs" />
     <Compile Remove="Data\Migrations\20220114004644_CreacionTablaPelicula.Designer.cs" />
