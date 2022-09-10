@@ -118,7 +118,7 @@ namespace APIPeliculas.Controllers
 				new Claim(ClaimTypes.Name, usuarioDesdeRepo.UsuarioA.ToString())
 			};
 			//* Generación del token
-			var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config.GetSectio("AppSettings:Token").Value));
+			var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config.GetSection("AppSettings:Token").Value));
 			// Creamos las credenciales del token
 			var credenciales = new SigningCredentials(key,SecurityAlgorithms.HmacSha512Signature);
 			var tokenDescriptor = new SecurityTokenDescriptor
